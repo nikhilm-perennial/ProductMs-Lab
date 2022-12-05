@@ -1,12 +1,10 @@
 package xyz.mynt.wcbootcamp.entity;
 
-import jakarta.persistence.*;
 import lombok.*;
 import xyz.mynt.wcbootcamp.enums.CategoryEnum;
 
+import javax.persistence.*;
 import java.math.BigDecimal;
-
-import static jakarta.persistence.EnumType.STRING;
 
 
 @Getter
@@ -23,7 +21,7 @@ public class ProductEntity {
 
     private String name;
 
-    @Enumerated(STRING)
+    @Enumerated(EnumType.STRING)
     private CategoryEnum category;
 
     private BigDecimal price;

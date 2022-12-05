@@ -9,12 +9,15 @@ import xyz.mynt.wcbootcamp.dto.ProductsDTO;
 import xyz.mynt.wcbootcamp.dto.ReservedProductDTO;
 import xyz.mynt.wcbootcamp.entity.ProductEntity;
 import xyz.mynt.wcbootcamp.enums.CategoryEnum;
+import xyz.mynt.wcbootcamp.exceptions.ProductNotFoundException;
+import xyz.mynt.wcbootcamp.exceptions.ProductOutOfStockException;
 import xyz.mynt.wcbootcamp.repository.ProductRepository;
 import xyz.mynt.wcbootcamp.service.ProductService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static xyz.mynt.wcbootcamp.utility.MapperUtils.reservedProductDTO;
@@ -45,6 +48,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDTO getProductById(String id) {
         Optional<ProductEntity> product = productRepository.findById(id);
+        if (product.isEmpty()) throw new ProductNotFoundException("Product not found");
         ProductEntity entity = product.get();
         ProductDTO productDTO = toProductDTO(entity);
         return productDTO;
@@ -55,7 +59,6 @@ public class ProductServiceImpl implements ProductService {
         product.setId(generateRandomUUID());
         product.setReservedQuantity(0);
         productRepository.save(product);
-        log.info("Product added ->",product);
         return product;
     }
 
@@ -63,18 +66,18 @@ public class ProductServiceImpl implements ProductService {
     public ReservedProductDTO updateQuantity(String id, ProductEntity product) {
         Optional<ProductEntity> productEntity = productRepository.findById(id);
         ProductEntity entity = productEntity.get();
-        int value = entity.getInStock();
+        int inStock = entity.getInStock();
         int updateReservedQuantity = entity.getReservedQuantity() + product.getReservedQuantity();
+        if (entity.getInStock().equals(0)){
+            throw new ProductOutOfStockException("Product out of stock");
+        }
         if (entity.getInStock() > product.getReservedQuantity()){
             entity.setReservedQuantity(updateReservedQuantity);
-            entity.setInStock(value - product.getReservedQuantity());
+            entity.setInStock(inStock - product.getReservedQuantity());
         }
         productRepository.save(entity);
         ReservedProductDTO productDTO = reservedProductDTO(entity);
 
         return productDTO;
     }
-
-
-
 }

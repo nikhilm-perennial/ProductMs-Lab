@@ -13,5 +13,4 @@ public class ProductsDTO {
 
     List<ProductDTO> products;
 
-//    ProductDTO productDTO;
 }
