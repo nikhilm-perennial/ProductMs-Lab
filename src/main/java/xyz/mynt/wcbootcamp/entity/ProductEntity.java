@@ -4,6 +4,7 @@ import lombok.*;
 import xyz.mynt.wcbootcamp.enums.CategoryEnum;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 
@@ -14,7 +15,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Entity
 @Table(name = "PRODUCTS")
-public class ProductEntity {
+public class ProductEntity implements Serializable {
 
     @Id
     private String id;

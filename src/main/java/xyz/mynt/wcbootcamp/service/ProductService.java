@@ -18,5 +18,7 @@ public interface ProductService {
 
     ReservedProductDTO updateQuantity(String id, ProductEntity product);
 
+    void deleteProduct(String id);
+
 
 }

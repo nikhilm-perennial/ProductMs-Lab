@@ -3,6 +3,9 @@ package xyz.mynt.wcbootcamp.service.impl;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import xyz.mynt.wcbootcamp.dto.ProductDTO;
 import xyz.mynt.wcbootcamp.dto.ProductsDTO;
@@ -79,5 +82,15 @@ public class ProductServiceImpl implements ProductService {
         ReservedProductDTO productDTO = reservedProductDTO(entity);
 
         return productDTO;
+    }
+
+    @Override
+    public void deleteProduct(String id) {
+        Optional<ProductEntity> entity = productRepository.findById(id);
+        if (entity.isEmpty()){
+            throw new ProductNotFoundException("Product not found");
+        }
+        ProductEntity product = entity.get();
+        productRepository.delete(product);
     }
 }
