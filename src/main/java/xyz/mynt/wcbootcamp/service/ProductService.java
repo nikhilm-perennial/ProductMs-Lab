@@ -16,6 +16,8 @@ public interface ProductService {
 
     ProductEntity addProduct(ProductEntity product);
 
+    ProductDTO addProduct(ProductDTO product);
+
     ReservedProductDTO updateQuantity(String id, ProductEntity product);
 
     void deleteProduct(String id);

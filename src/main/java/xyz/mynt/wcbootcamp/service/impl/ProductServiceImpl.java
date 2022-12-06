@@ -1,30 +1,24 @@
 package xyz.mynt.wcbootcamp.service.impl;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import xyz.mynt.wcbootcamp.dto.ProductDTO;
 import xyz.mynt.wcbootcamp.dto.ProductsDTO;
 import xyz.mynt.wcbootcamp.dto.ReservedProductDTO;
 import xyz.mynt.wcbootcamp.entity.ProductEntity;
-import xyz.mynt.wcbootcamp.enums.CategoryEnum;
 import xyz.mynt.wcbootcamp.exceptions.ProductNotFoundException;
 import xyz.mynt.wcbootcamp.exceptions.ProductOutOfStockException;
 import xyz.mynt.wcbootcamp.repository.ProductRepository;
 import xyz.mynt.wcbootcamp.service.ProductService;
+import xyz.mynt.wcbootcamp.utility.NotificationSenderUtils;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
-import static xyz.mynt.wcbootcamp.utility.MapperUtils.reservedProductDTO;
-import static xyz.mynt.wcbootcamp.utility.MapperUtils.toProductDTO;
+import static xyz.mynt.wcbootcamp.utility.MapperUtils.*;
 import static xyz.mynt.wcbootcamp.utility.RandomGeneratorUtils.generateRandomUUID;
 
 @Slf4j
@@ -33,6 +27,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private KafkaTemplate<String,String> kafkaTemplate;
 
     @Override
     public ProductsDTO getProductFromDatabase() {
@@ -59,10 +56,19 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductEntity addProduct(ProductEntity product) {
-        product.setId(generateRandomUUID());
-        product.setReservedQuantity(0);
-        productRepository.save(product);
         return product;
+    }
+
+    @Override
+    public ProductDTO addProduct(ProductDTO product) {
+
+        ProductEntity entity = toProductEntity(product);
+        entity.setId(generateRandomUUID());
+        entity.setReservedQuantity(0);
+        ProductDTO productDTO;
+        productDTO = toProductDTO(productRepository.save(entity));
+        kafkaTemplate.send("Product_Notification", NotificationSenderUtils.generateNotificationBody(productDTO));
+        return productDTO;
     }
 
     @Override
